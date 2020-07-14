@@ -1,0 +1,37 @@
+# This repository was shamelessly copied from https://github.com/Gian77/Amplicon-Pipelines-hpcc
+# This repository contains scripts for processing of 16S and ITS data generated from Illumina Amplicon sequencing
+# SBATCH scripts are desgined to run on Michiga State University High Performance Computing Cluster
+
+--------------
+
+Tools used:
+
+USEARCH, avilable here https://www.drive5.com/usearch/
+VSEARCH https://github.com/torognes/vsearch
+QIIME https://github.com/Gian77/qiime
+FastQC https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
+Spades http://bioinf.spbau.ru/spades
+cutadapt http://cutadapt.readthedocs.io/en/stable/guide.html
+seqtk https://github.com/lh3/seqtk
+bowtie2 http://bowtie-bio.sourceforge.net/bowtie2/index.shtml
+CONSTAX https://github.com/natalie-vandepol/compare_taxonomy
+RDP https://github.com/rdpstaff/classifier
+
+Taxonomic References Databases:
+
+UNITE https://unite.ut.ee/
+GREENGENES http://greengenes.lbl.gov/Download/
+SILVA https://www.arb-silva.de/
+
+
+
+#a few handy Bash commands for simple checks
+
+# Count sequencs in a *.fastq file
+echo $(cat *.fastq|wc -l)/4|bc
+
+# count sequencs in *.fasta file
+grep -c "^>" *.fasta
+
+# check number of reads per sequence size in a *.fastq file
+awk 'NR%4 == 2 {lengths[length($0)]++} END {for (l in lengths) {print l, lengths[l]}}' *.fastq
