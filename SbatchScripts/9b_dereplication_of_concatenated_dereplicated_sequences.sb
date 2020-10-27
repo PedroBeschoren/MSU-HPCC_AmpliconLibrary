@@ -1,0 +1,18 @@
+#!/bin/bash -login
+########## SBATCH Lines for Resource Request ##########
+ 
+#SBATCH --time=3:30:00             # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --nodes=1-2                # number of different nodes - could be an exact number or a range of nodes (same as -N)
+#SBATCH --ntasks=2                  # number of tasks - how many tasks (nodes) that you require (same as -n)
+#SBATCH --cpus-per-task=5           # number of CPUs (or cores) per task (same as -c)
+#SBATCH --mem-per-cpu=20G            # memory required per allocated CPU (or core) - amount of memory (in bytes)
+#SBATCH --job-name derep_fungi_MMPRNT018      # you can give your job a name for easier identification (same as -J)
+
+cd ${SLURM_SUBMIT_DIR}
+
+/mnt/research/rdp/public/thirdParty/usearch11.0.667_i86linux64 -fastx_uniques dereplicated/Cat_Lib5-8_uniques.fastq -fastqout dereplicated/uniques_sizein_ee01_cat58.fastq -sizeout -sizein
+
+seqtk seq -aQ64 dereplicated.1/uniques_sizein_ee01_cat58.fastq >  dereplicated.1/uniques.fasta
+seqtk sample -s400 dereplicated.1/uniques_sizein_ee01_cat58.fastq > dereplicated.1/sub_uniques.fasta
+/mnt/research/rdp/public/thirdParty/usearch11.0.667_i86linux64 -fastq_eestats2 dereplicated.1/uniques_sizein_ee01_cat58.fastq -output stats/eestats2_uniques_maxee0.1.txt -length_cutoffs 100,500,1
+vsearch -fastq_stats dereplicated.1/uniques_sizein_ee01_cat58.fastq -log stats/stats_results_uniques_maxee0.1.txt

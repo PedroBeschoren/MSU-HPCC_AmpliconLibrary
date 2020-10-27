@@ -1,0 +1,32 @@
+#!/bin/bash -login
+
+#SBATCH --time=08:00:00					### limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --ntasks=2					### number of tasks - how many tasks (nodes) that you require (same as -n)
+#SBATCH --cpus-per-task=20				### number of CPUs (or cores) per task (same as -c)
+#SBATCH --mem=32G					### memory required per node - amount of memory (in bytes)
+#SBATCH --job-name constax				### you can give your job a name for easier identification (same as -J)
+
+cd ${SLURM_SUBMIT_DIR}
+
+mkdir taxonomy_assignments
+
+# java -Xmx10g -jar /RDPTools/classifier.jar train -o training_files -s DB/${base}__RDP_trained.fasta -t DB/${base}__RDP_taxonomy_trained.txt
+# /mnt/research/rdp/public/RDPTools/classifier/samplefiles/rRNAClassifier.properties
+
+conda activate py2
+
+java -Xmx10g -jar /mnt/research/rdp/public/RDPTools/classifier.jar classify -c 0.8 -g 16srrna -f allrank -o taxonomy_assignments/otus_taxonomy_RDP.rdp clustered_OTU_ESV_maxee0.1/otus.fasta
+#java -Xmx10g -jar /mnt/research/rdp/public/RDPTools/classifier.jar classify -c 0.8 -g 16srrna -f allrank -o taxonomy_assignments/zotus_taxonomy_RDP.rdp clustered_OTU_ESV/zotus.fasta
+
+python python_scripts/rdp_to_standard.py taxonomy_assignments/otus_taxonomy_RDP.txt taxonomy_assignments/otus_taxonomy_stand_RDP.txt
+#python python_scripts/rdp_to_standard.py taxonomy_assignments/zotus_taxonomy_RDP.txt taxonomy_assignments/zotus_taxonomy_stand_RDP.txt
+
+conda deactivate 
+
+# SINTAX taxonomy using SILVA
+# /mnt/research/rdp/public/thirdParty/usearch11.0.667_i86linux64 -makeudb_sintax /mnt/home/benucci/DATABASES/silva_16s_v123.fa -output /mnt/home/benucci/DATABASES/sintax_silva_16s_v123.db
+# /mnt/research/rdp/public/thirdParty/usearch11.0.667_i86linux64 -sintax /mnt/home/benucci/miseq_16s_deep_core_GLBRC/16s_analysis/clustered_OTU_ESV/otus.fasta -db /mnt/home/benucci/DATABASES/sintax_silva_16s_v123.db -tabbedout otu_taxonomy_SILVA.txt -strand both -sintax_cutoff 0.8
+# /mnt/research/rdp/public/thirdParty/usearch11.0.667_i86linux64 -sintax /mnt/home/benucci/miseq_16s_deep_core_GLBRC/16s_analysis/clustered_OTU_ESV/zotus.fasta -db /mnt/home/benucci/DATABASES/sintax_silva_16s_v123.db -tabbedout zotu_taxonomy_SILVA.txt -strand both -sintax_cutoff 0.8
+
+# mv otu_taxonomy_SILVA.txt taxonomy_assignments/
+# mv zotu_taxonomy_SILVA.txt taxonomy_assignments/
